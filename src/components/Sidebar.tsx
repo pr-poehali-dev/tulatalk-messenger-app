@@ -1,6 +1,14 @@
 import Icon from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 
+interface User {
+  id: number;
+  username: string;
+  display_name: string;
+  avatar: string;
+  status?: string;
+}
+
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
@@ -9,9 +17,10 @@ interface SidebarProps {
   isDarkMode: boolean;
   onToggleDarkMode: () => void;
   onLogout: () => void;
+  currentUser: User;
 }
 
-const Sidebar = ({ isOpen, onClose, activeSection, onSectionChange, isDarkMode, onToggleDarkMode, onLogout }: SidebarProps) => {
+const Sidebar = ({ isOpen, onClose, activeSection, onSectionChange, isDarkMode, onToggleDarkMode, onLogout, currentUser }: SidebarProps) => {
   const menuItems = [
     { id: 'chats', icon: 'MessageSquare', label: 'Мои чаты', badge: null, color: 'from-blue-500 to-blue-600' },
     { id: 'contacts', icon: 'Users', label: 'Контакты', badge: null, color: 'from-green-500 to-green-600' },
@@ -48,11 +57,11 @@ const Sidebar = ({ isOpen, onClose, activeSection, onSectionChange, isDarkMode, 
 
             <div className="flex items-center gap-4 p-4 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl hover:from-primary/15 hover:to-secondary/15 transition-all cursor-pointer group shadow-sm border border-primary/10">
               <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center text-3xl ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all shadow-sm">
-                👤
+                {currentUser.avatar}
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-foreground group-hover:text-primary transition-colors">Иван Петров</h3>
-                <p className="text-sm text-primary/70 font-medium">@ivan_petrov</p>
+                <h3 className="font-bold text-foreground group-hover:text-primary transition-colors">{currentUser.display_name}</h3>
+                <p className="text-sm text-primary/70 font-medium">@{currentUser.username}</p>
               </div>
               <Icon name="ChevronRight" size={20} className="text-primary group-hover:translate-x-1 transition-transform" />
             </div>

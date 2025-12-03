@@ -1,0 +1,24 @@
+{
+  "tests": [
+    {
+      "name": "Search users",
+      "method": "GET",
+      "path": "/?q=test&user_id=1",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "users": "array"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get all users",
+      "method": "GET",
+      "path": "/?user_id=1",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "users": "array"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

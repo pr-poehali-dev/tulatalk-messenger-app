@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Icon from '@/components/ui/icon';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,8 @@ interface Chat {
   time: string;
   unread: number;
   online: boolean;
+  userId?: number;
+  chatId?: number;
 }
 
 interface Message {
@@ -21,14 +23,17 @@ interface Message {
   isMine: boolean;
   type: 'text' | 'sticker' | 'image' | 'video' | 'voice';
   duration?: number;
+  sender_id?: number;
 }
 
 interface ChatWindowProps {
   chat: Chat | null;
   onBack: () => void;
+  currentUserId: number;
+  onMessageSent?: () => void;
 }
 
-const ChatWindow = ({ chat, onBack }: ChatWindowProps) => {
+const ChatWindow = ({ chat, onBack, currentUserId, onMessageSent }: ChatWindowProps) => {
   const [message, setMessage] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
@@ -37,36 +42,45 @@ const ChatWindow = ({ chat, onBack }: ChatWindowProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const recordingIntervalRef = useRef<number | null>(null);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 1,
-      text: 'Привет! Как дела? 👋',
-      time: '14:30',
-      isMine: false,
-      type: 'text',
-    },
-    {
-      id: 2,
-      text: 'Отлично! Работаю над новым проектом',
-      time: '14:31',
-      isMine: true,
-      type: 'text',
-    },
-    {
-      id: 3,
-      text: '🎉',
-      time: '14:32',
-      isMine: false,
-      type: 'sticker',
-    },
-    {
-      id: 4,
-      text: 'Звучит здорово! Расскажешь подробнее?',
-      time: '14:32',
-      isMine: false,
-      type: 'text',
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (chat?.chatId) {
+      loadMessages();
+    }
+  }, [chat?.chatId]);
+
+  const loadMessages = async () => {
+    if (!chat?.chatId) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `https://functions.poehali.dev/c15521f0-23f4-4e20-a9bd-802605ad3088?user_id=${currentUserId}&chat_id=${chat.chatId}`
+      );
+      const data = await response.json();
+      
+      if (response.ok && data.messages) {
+        const mappedMessages = data.messages.map((msg: any) => ({
+          id: msg.id,
+          text: msg.content,
+          time: new Date(msg.created_at).toLocaleTimeString('ru-RU', {
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+          isMine: msg.sender_id === currentUserId,
+          type: msg.message_type,
+          sender_id: msg.sender_id,
+        }));
+        setMessages(mappedMessages);
+      }
+    } catch (err) {
+      console.error('Failed to load messages:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const stickers = [
     '😀', '😂', '🥰', '😍', '🤗', '😎',
@@ -75,20 +89,45 @@ const ChatWindow = ({ chat, onBack }: ChatWindowProps) => {
     '❤️', '💔', '🔥', '⭐', '✨', '💯',
   ];
 
-  const handleSend = () => {
-    if (message.trim()) {
-      const newMessage: Message = {
-        id: messages.length + 1,
-        text: message,
-        time: new Date().toLocaleTimeString('ru-RU', {
-          hour: '2-digit',
-          minute: '2-digit',
+  const handleSend = async () => {
+    if (!message.trim() || !chat) return;
+
+    const textToSend = message;
+    setMessage('');
+
+    try {
+      const response = await fetch('https://functions.poehali.dev/c15521f0-23f4-4e20-a9bd-802605ad3088', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'send',
+          sender_id: currentUserId,
+          recipient_id: chat.userId || chat.id,
+          content: textToSend,
+          message_type: 'text',
         }),
-        isMine: true,
-        type: 'text',
-      };
-      setMessages([...messages, newMessage]);
-      setMessage('');
+      });
+
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        const newMessage: Message = {
+          id: data.message_id,
+          text: textToSend,
+          time: new Date().toLocaleTimeString('ru-RU', {
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+          isMine: true,
+          type: 'text',
+          sender_id: currentUserId,
+        };
+        setMessages([...messages, newMessage]);
+        onMessageSent?.();
+      }
+    } catch (err) {
+      console.error('Failed to send message:', err);
+      setMessage(textToSend);
     }
   };
 
@@ -128,19 +167,44 @@ const ChatWindow = ({ chat, onBack }: ChatWindowProps) => {
     }
   };
 
-  const handleStickerSelect = (sticker: string) => {
-    const newMessage: Message = {
-      id: messages.length + 1,
-      text: sticker,
-      time: new Date().toLocaleTimeString('ru-RU', {
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
-      isMine: true,
-      type: 'sticker',
-    };
-    setMessages([...messages, newMessage]);
+  const handleStickerSelect = async (sticker: string) => {
+    if (!chat) return;
+
     setShowStickerPicker(false);
+
+    try {
+      const response = await fetch('https://functions.poehali.dev/c15521f0-23f4-4e20-a9bd-802605ad3088', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'send',
+          sender_id: currentUserId,
+          recipient_id: chat.userId || chat.id,
+          content: sticker,
+          message_type: 'sticker',
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        const newMessage: Message = {
+          id: data.message_id,
+          text: sticker,
+          time: new Date().toLocaleTimeString('ru-RU', {
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+          isMine: true,
+          type: 'sticker',
+          sender_id: currentUserId,
+        };
+        setMessages([...messages, newMessage]);
+        onMessageSent?.();
+      }
+    } catch (err) {
+      console.error('Failed to send sticker:', err);
+    }
   };
 
   const startRecording = () => {

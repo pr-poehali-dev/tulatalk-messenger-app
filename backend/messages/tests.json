@@ -1,0 +1,33 @@
+{
+  "tests": [
+    {
+      "name": "Get user chats",
+      "method": "GET",
+      "path": "/?user_id=1",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "chats": "array"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Send message",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "send",
+        "sender_id": 1,
+        "recipient_id": 2,
+        "content": "Hello!",
+        "message_type": "text"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "message_id": "number",
+        "chat_id": "number"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
