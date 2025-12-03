@@ -39,11 +39,11 @@ const ChatList = ({ chats, selectedChat, onSelectChat, onMenuClick }: ChatListPr
           <Icon
             name="Search"
             size={18}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/60"
           />
           <Input
             placeholder="Поиск чатов..."
-            className="pl-10 bg-muted border-0"
+            className="pl-11 bg-muted/50 border-0 rounded-xl focus:bg-muted transition-colors h-11"
           />
         </div>
       </div>
