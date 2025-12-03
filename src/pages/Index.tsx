@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ChatList from '@/components/ChatList';
 import ChatWindow from '@/components/ChatWindow';
 import Sidebar from '@/components/Sidebar';
@@ -16,6 +16,34 @@ interface Chat {
 const Index = () => {
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<string>('chats');
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      setIsDarkMode(true);
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+    if (!isDarkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  };
+
+  const handleLogout = () => {
+    if (confirm('Вы уверены, что хотите выйти?')) {
+      localStorage.clear();
+      window.location.reload();
+    }
+  };
 
   const chats: Chat[] = [
     {
@@ -76,7 +104,15 @@ const Index = () => {
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <Sidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        activeSection={activeSection}
+        onSectionChange={setActiveSection}
+        isDarkMode={isDarkMode}
+        onToggleDarkMode={toggleDarkMode}
+        onLogout={handleLogout}
+      />
       
       <div className="flex flex-1 overflow-hidden">
         <ChatList

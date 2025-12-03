@@ -4,15 +4,20 @@ import { Button } from '@/components/ui/button';
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  activeSection: string;
+  onSectionChange: (section: string) => void;
+  isDarkMode: boolean;
+  onToggleDarkMode: () => void;
+  onLogout: () => void;
 }
 
-const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
+const Sidebar = ({ isOpen, onClose, activeSection, onSectionChange, isDarkMode, onToggleDarkMode, onLogout }: SidebarProps) => {
   const menuItems = [
-    { icon: 'MessageSquare', label: 'Мои чаты', badge: null, color: 'from-blue-500 to-blue-600' },
-    { icon: 'Users', label: 'Контакты', badge: null, color: 'from-green-500 to-green-600' },
-    { icon: 'Image', label: 'Медиа', badge: null, color: 'from-purple-500 to-purple-600' },
-    { icon: 'Bell', label: 'Уведомления', badge: 3, color: 'from-orange-500 to-orange-600' },
-    { icon: 'Settings', label: 'Настройки', badge: null, color: 'from-gray-500 to-gray-600' },
+    { id: 'chats', icon: 'MessageSquare', label: 'Мои чаты', badge: null, color: 'from-blue-500 to-blue-600' },
+    { id: 'contacts', icon: 'Users', label: 'Контакты', badge: null, color: 'from-green-500 to-green-600' },
+    { id: 'media', icon: 'Image', label: 'Медиа', badge: null, color: 'from-purple-500 to-purple-600' },
+    { id: 'notifications', icon: 'Bell', label: 'Уведомления', badge: 3, color: 'from-orange-500 to-orange-600' },
+    { id: 'settings', icon: 'Settings', label: 'Настройки', badge: null, color: 'from-gray-500 to-gray-600' },
   ];
 
   return (
@@ -57,7 +62,15 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             {menuItems.map((item, index) => (
               <button
                 key={index}
-                className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-primary/5 active:bg-primary/10 transition-all duration-200 group"
+                onClick={() => {
+                  onSectionChange(item.id);
+                  onClose();
+                }}
+                className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200 group ${
+                  activeSection === item.id
+                    ? 'bg-primary/10 shadow-sm'
+                    : 'hover:bg-primary/5 active:bg-primary/10'
+                }`}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm`}>
@@ -81,16 +94,18 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
           <div className="p-4 border-t border-border space-y-2 bg-gradient-to-t from-muted/20 to-transparent">
             <Button
+              onClick={onToggleDarkMode}
               variant="outline"
               className="w-full justify-start gap-3 rounded-xl border-primary/20 hover:bg-primary/5 hover:border-primary/40 transition-all font-semibold"
             >
               <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-sm">
-                <Icon name="Moon" size={18} className="text-white" />
+                <Icon name={isDarkMode ? "Sun" : "Moon"} size={18} className="text-white" />
               </div>
-              Тёмная тема
+              {isDarkMode ? 'Светлая тема' : 'Тёмная тема'}
             </Button>
             
             <Button
+              onClick={onLogout}
               variant="ghost"
               className="w-full justify-start gap-3 text-red-600 hover:text-red-600 hover:bg-red-500/10 rounded-xl transition-all font-semibold"
             >
