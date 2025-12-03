@@ -49,31 +49,32 @@ const ChatList = ({ chats, selectedChat, onSelectChat, onMenuClick }: ChatListPr
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {chats.map((chat) => (
+        {chats.map((chat, index) => (
           <button
             key={chat.id}
             onClick={() => onSelectChat(chat)}
-            className={`w-full p-4 flex items-center gap-3 hover:bg-muted transition-all duration-200 border-l-4 ${
+            className={`w-full p-4 flex items-center gap-3 hover:bg-primary/5 active:bg-primary/10 transition-all duration-200 border-l-4 relative group ${
               selectedChat?.id === chat.id
-                ? 'bg-muted border-l-primary'
+                ? 'bg-primary/10 border-l-primary shadow-sm'
                 : 'border-l-transparent'
             }`}
+            style={{ animationDelay: `${index * 50}ms` }}
           >
             <div className="relative flex-shrink-0">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-2xl">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center text-2xl shadow-sm ring-2 ring-primary/10 group-hover:ring-primary/30 transition-all">
                 {chat.avatar}
               </div>
               {chat.online && (
-                <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-card animate-pulse-soft" />
+                <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-card animate-pulse-soft shadow-lg" />
               )}
             </div>
 
             <div className="flex-1 min-w-0 text-left">
               <div className="flex items-center justify-between mb-1">
-                <h3 className="font-semibold text-foreground truncate">
+                <h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
                   {chat.name}
                 </h3>
-                <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">
+                <span className="text-xs text-muted-foreground ml-2 flex-shrink-0 font-medium">
                   {chat.time}
                 </span>
               </div>
@@ -83,7 +84,7 @@ const ChatList = ({ chats, selectedChat, onSelectChat, onMenuClick }: ChatListPr
             </div>
 
             {chat.unread > 0 && (
-              <Badge className="bg-primary text-primary-foreground animate-scale-in">
+              <Badge className="bg-gradient-to-br from-primary to-secondary text-white animate-scale-in shadow-md min-w-[24px] h-6">
                 {chat.unread}
               </Badge>
             )}

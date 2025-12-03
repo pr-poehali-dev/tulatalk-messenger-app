@@ -15,10 +15,10 @@
     --popover: 0 0% 100%;
     --popover-foreground: 180 50% 10%;
 
-    --primary: 172 83% 37%;
+    --primary: 172 88% 40%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 173 58% 39%;
+    --secondary: 173 70% 42%;
     --secondary-foreground: 0 0% 100%;
 
     --muted: 180 30% 94%;
@@ -100,5 +100,11 @@
   body {
     @apply bg-background text-foreground;
     font-family: "Rubik", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }
